@@ -11,10 +11,10 @@ from langchain_community.document_loaders import (
 )
 from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStoreRetriever
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from medicine_assistant.config import settings
+from .config import settings
 
 
 class RAGComponent:
@@ -35,9 +35,13 @@ class RAGComponent:
             length_function=len,
             separators=["\n\n", "\n", " ", ""],
         )
-        # Using HuggingFace embeddings (free, no API key required)
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        # Using OpenRouter (OpenAI-compatible) embeddings via LangChain
+        # Model: `openai/text-embedding-3-small`
+        settings.validate()
+        self.embeddings = OpenAIEmbeddings(
+            model="openai/text-embedding-3-small",
+            api_key=lambda: settings.OPENROUTER_API_KEY,
+            base_url=settings.OPENROUTER_BASE_URL,
         )
         self._vector_store: Optional[Chroma] = None
 

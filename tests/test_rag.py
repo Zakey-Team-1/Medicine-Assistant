@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from medicine_assistant.rag import RAGComponent
+from src.rag import RAGComponent
 
 
 class TestRAGComponent:
@@ -25,7 +25,7 @@ class TestRAGComponent:
         """Create a RAG component with mocked embeddings."""
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch(
-                "medicine_assistant.rag.HuggingFaceEmbeddings",
+                "src.rag.OpenAIEmbeddings",
                 return_value=mock_embeddings,
             ):
                 yield RAGComponent(persist_directory=tmpdir)

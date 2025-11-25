@@ -3,9 +3,9 @@
 import argparse
 import sys
 
-from medicine_assistant.agent import MedicineAssistantAgent
-from medicine_assistant.config import settings
-from medicine_assistant.rag import RAGComponent
+from agent import MedicineAssistantAgent
+from .config import settings
+from rag import RAGComponent
 
 
 def create_agent() -> MedicineAssistantAgent:

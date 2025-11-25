@@ -2,7 +2,7 @@
 
 from langchain_core.messages import AIMessage, HumanMessage
 
-from medicine_assistant.state import AgentState
+from src.state import AgentState
 
 
 class TestAgentState:

@@ -2,7 +2,7 @@
 
 from langchain_openai import ChatOpenAI
 
-from medicine_assistant.config import settings
+from .config import settings
 
 
 def get_llm() -> ChatOpenAI:
@@ -16,8 +16,8 @@ def get_llm() -> ChatOpenAI:
 
     return ChatOpenAI(
         model=settings.MODEL_NAME,
-        openai_api_key=settings.OPENROUTER_API_KEY,
-        openai_api_base=settings.OPENROUTER_BASE_URL,
+        api_key=lambda: settings.OPENROUTER_API_KEY,
+        base_url=settings.OPENROUTER_BASE_URL,
         default_headers={
             "HTTP-Referer": "https://github.com/ibrhr/Medicine-Assistant",
             "X-Title": "Medicine Assistant",

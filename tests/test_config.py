@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from medicine_assistant.config import Settings
+from src.config import Settings
 
 
 class TestSettings:

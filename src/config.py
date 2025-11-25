@@ -16,7 +16,7 @@ class Settings:
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
 
     # Model configuration - using a capable model from OpenRouter
-    MODEL_NAME: str = os.getenv("MODEL_NAME", "openai/gpt-4o-mini")
+    MODEL_NAME: str = os.getenv("MODEL_NAME", "openai/gpt-5-mini")
 
     # RAG configuration
     CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "1000"))
