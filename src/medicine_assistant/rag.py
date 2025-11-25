@@ -155,7 +155,14 @@ class RAGComponent:
 
     def clear(self) -> None:
         """Clear all documents from the vector store."""
-        self._vector_store = None
+        if self._vector_store is not None:
+            try:
+                # Delete the existing collection to clear all data
+                self._vector_store.delete_collection()
+            except Exception:
+                pass  # Collection may not exist
+            self._vector_store = None
+
         # Reinitialize empty vector store
         self._vector_store = Chroma(
             collection_name=settings.COLLECTION_NAME,

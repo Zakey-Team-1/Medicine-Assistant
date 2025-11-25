@@ -160,7 +160,7 @@ class MedicineAssistantAgent:
         # Extract the AI response
         for msg in reversed(result.get("messages", [])):
             if isinstance(msg, AIMessage):
-                return msg.content
+                return msg.content or "No response generated."
 
         return "I apologize, but I couldn't generate a response. Please try again."
 
@@ -187,7 +187,7 @@ class MedicineAssistantAgent:
         # Extract the AI response
         for msg in reversed(result.get("messages", [])):
             if isinstance(msg, AIMessage):
-                return msg.content
+                return msg.content or "No response generated."
 
         return "I apologize, but I couldn't generate a response. Please try again."
 
