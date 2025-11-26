@@ -1,0 +1,102 @@
+Patient_ID,Name,Age,Gender,Height_cm,Weight_kg,Diabetes_Type,Duration_Years,Comorbidities,Latest_HbA1c,Current_Meds,eGFR_ml_min,Recent_Symptoms
+P001,Ahmad Salem,58,Male,178.0,85.2,T2D,7.3,Hypertension,7.9,Metformin,82,Mild fatigue
+P002,Fatima Ali,42,Female,165.0,68.9,T1D,20.0,,7.2,Insulin Pump,95,
+P003,Omar Hassan,66,Male,181.0,105.0,T2D,12.1,History of CVD,9.5,Metformin + SGLT2i,55,Increased thirst
+P004,Lina Jamal,70,Female,155.0,78.5,T2D,4.8,Dyslipidemia,6.6,Diet/Lifestyle Only,110,
+P005,Youssef Adel,35,Female,168.0,92.1,T2D,1.5,,10.1,Metformin,98,Frequent Urination
+P006,Nour El-Deen,51,Male,172.0,77.0,T1D,15.0,Hypertension,8.5,Insulin Glargine,70,
+P007,Khaled Said,63,Male,176.0,101.5,T2D,9.2,CKD Stage 3,7.5,Metformin + GLP-1 RA,45,Mild Fatigue
+P008,Sara Mostafa,48,Female,160.0,65.4,T2D,6.0,,6.1,Diet/Lifestyle Only,105,
+P009,Tariq Zaki,74,Male,170.0,88.0,T2D,18.9,History of CVD,8.8,Metformin + SGLT2i,88,Numbness in feet
+P010,Hala Reda,33,Female,162.0,71.3,Gestational,0.8,,7.0,Insulin Pump,99,
+P011,Samir Nabil,59,Male,174.0,98.7,T2D,14.5,Hypertension,8.1,Metformin + SGLT2i,75,
+P012,Amani Saad,68,Female,161.0,72.3,T2D,6.2,Dyslipidemia,6.9,Metformin,92,Mild fatigue
+P013,Majid Fawzi,45,Male,185.0,115.0,T2D,2.0,,11.0,Diet/Lifestyle Only,105,Increased thirst
+P014,Reem Adel,29,Female,167.0,63.1,T1D,18.0,,8.8,Insulin Pump,100,
+P015,Fahad Ziad,77,Male,170.0,81.4,T2D,25.5,CKD Stage 4,7.7,Insulin Glargine,35,Numbness in feet
+P016,Hind Waseem,53,Female,158.0,69.5,T2D,9.0,Hypertension,7.4,Metformin + DPP-4i,68,
+P017,Zaid Mansour,38,Male,179.0,90.0,T2D,0.5,,6.4,Metformin,108,
+P018,Yara Hafez,61,Female,164.0,88.2,T2D,17.0,History of CVD,8.3,Metformin + GLP-1 RA,80,Mild fatigue
+P019,Wael Essam,49,Male,175.0,74.5,T1D,30.0,,9.2,Insulin Pen,94,Frequent Urination
+P020,Salma Murad,72,Female,166.0,76.7,T2D,11.1,Dyslipidemia,6.0,Metformin,85,
+P021,Mona Zaki,44,Female,163.0,79.5,T2D,3.5,,8.2,Metformin + DPP-4i,88,
+P022,Hani Marwan,69,Male,171.0,95.3,T2D,18.0,Hypertension,7.1,Metformin + SGLT2i,62,Mild Fatigue
+P023,Layla Tarek,31,Female,170.0,60.5,T1D,10.0,,7.7,Insulin Pump,115,
+P024,Adnan Fadi,56,Male,177.0,82.0,T2D,9.7,Dyslipidemia,6.5,Metformin,95,
+P025,Basma Kamel,73,Female,159.0,88.9,T2D,16.2,History of CVD,9.8,Insulin Glargine,50,Increased thirst
+P026,Rami Gamil,40,Male,183.0,102.5,T2D,0.9,,10.5,Diet/Lifestyle Only,102,Frequent Urination
+P027,Dina Sherif,65,Female,166.0,70.8,T2D,13.0,CKD Stage 3,8.6,Metformin,42,Numbness in feet
+P028,Farid Samy,52,Male,176.0,76.4,T1D,22.0,,9.1,Insulin Pen,90,
+P029,Walaa Ashraf,37,Female,169.0,75.0,Gestational,0.3,,7.3,Diet/Lifestyle Only,112,
+P030,Jamal Moaz,60,Male,175.0,91.1,T2D,11.5,Hypertension,6.8,Metformin + GLP-1 RA,78,
+P031,Amir Ghazi,50,Male,179.0,88.5,T2D,5.0,Hypertension,7.6,Metformin,85,
+P032,Nadia Kamal,63,Female,164.0,74.2,T2D,14.8,Dyslipidemia,6.9,Metformin + SGLT2i,98,Mild Fatigue
+P033,Ziad Hamza,27,Male,181.0,75.0,T1D,7.5,,8.4,Insulin Pump,110,
+P034,Reem Adel,71,Female,157.0,81.3,T2D,21.0,History of CVD,8.9,Insulin Glargine,70,Numbness in feet
+P035,Bader Said,46,Male,176.0,94.7,T2D,3.0,,10.2,Metformin,105,Increased Thirst
+P036,Salwa Tareq,58,Female,168.0,69.1,T2D,11.2,Hypertension,7.2,Metformin + GLP-1 RA,82,
+P037,Mazen Khalil,67,Male,173.0,80.5,T2D,16.5,CKD Stage 3,8.0,Metformin,48,Frequent Urination
+P038,Huda Yasser,33,Female,166.0,62.9,T1D,15.5,,7.7,Insulin Pen,95,
+P039,Farouk Essam,75,Male,175.0,92.0,T2D,20.0,History of CVD,9.6,Metformin + SGLT2i,65,Mild Fatigue
+P040,Dalia Riad,41,Female,169.0,71.5,Gestational,0.5,,6.5,Diet/Lifestyle Only,108,
+P041,Samira Murad,62,Female,160.0,78.5,T2D,18.0,Hypertension,7.5,Metformin + SGLT2i,79,
+P042,Omar Fahmy,49,Male,178.0,101.2,T2D,6.0,Dyslipidemia,8.8,Metformin,90,Mild Fatigue
+P043,Lama Fouad,35,Female,168.0,65.4,T1D,12.0,,7.1,Insulin Pump,118,
+P044,Yassin Khalil,76,Male,172.0,84.9,T2D,25.0,History of CVD,9.4,Insulin Glargine,60,Numbness in feet
+P045,Hanan Maher,43,Female,165.0,73.1,T2D,4.1,,10.8,Diet/Lifestyle Only,100,Increased Thirst
+P046,Adel Safwat,55,Male,183.0,91.0,T2D,10.5,Hypertension,8.1,Metformin + GLP-1 RA,72,Frequent Urination
+P047,Maha Essam,68,Female,155.0,68.0,T2D,15.3,CKD Stage 3,7.8,Metformin,45,Mild Fatigue
+P048,Karim Nabil,30,Male,177.0,79.5,T1D,9.0,,6.7,Insulin Pen,105,
+P049,Asmaa Taha,47,Female,163.0,70.2,Gestational,0.4,,7.2,Diet/Lifestyle Only,99,
+P050,Wael Kamel,66,Male,174.0,89.6,T2D,19.1,Dyslipidemia,8.3,Metformin + SGLT2i,85,
+P051,Elias Zaki,53,Male,176.0,93.4,T2D,7.9,Hypertension,7.4,Metformin + DPP-4i,80,
+P052,Rania Fares,60,Female,165.0,72.8,T2D,13.5,,8.5,Metformin,93,Mild Fatigue
+P053,Tamer Said,39,Male,180.0,78.0,T1D,17.0,,7.0,Insulin Pen,112,
+P054,Jihan Omar,70,Female,158.0,83.1,T2D,22.0,History of CVD,9.1,Insulin Glargine,65,Numbness in feet
+P055,Zahra Akram,45,Female,163.0,64.9,T2D,3.2,,11.5,Diet/Lifestyle Only,105,Increased Thirst
+P056,Mustafa Hani,64,Male,174.0,90.0,T2D,15.0,Dyslipidemia,8.0,Metformin + GLP-1 RA,75,
+P057,Layan Murad,56,Female,170.0,77.5,T2D,10.1,CKD Stage 3,7.6,Metformin,41,Frequent Urination
+P058,Osama Karim,33,Male,185.0,86.2,T1D,5.5,,7.3,Insulin Pump,109,
+P059,Wafa Adel,78,Female,156.0,68.3,T2D,28.0,Hypertension,9.7,Metformin + SGLT2i,58,Mild Fatigue
+P060,Kamal Fadi,51,Male,173.0,81.6,T2D,8.8,,6.2,Metformin,97,
+P061,Hossam Ali,42,Male,182.0,95.0,T2D,4.3,,8.9,Metformin + SGLT2i,100,
+P062,Sawsan Riad,67,Female,162.0,70.9,T2D,16.0,Dyslipidemia,7.1,Metformin,83,
+P063,Bilal Younis,25,Male,175.0,72.5,T1D,3.0,,7.8,Insulin Pen,119,
+P064,Amal Sherif,73,Female,155.0,66.8,T2D,23.0,History of CVD,8.6,Metformin + GLP-1 RA,68,Frequent Urination
+P065,Firas Wael,48,Male,177.0,103.0,T2D,1.8,Hypertension,10.3,Metformin,90,Increased Thirst
+P066,Sana Majdi,55,Female,167.0,79.2,T2D,10.9,,6.5,Diet/Lifestyle Only,102,
+P067,Abbas Gamil,69,Male,169.0,85.1,T2D,19.5,CKD Stage 3,9.2,Insulin Glargine,49,Numbness in feet
+P068,Naila Murad,31,Female,171.0,61.5,T1D,11.0,,8.2,Insulin Pump,115,
+P069,Tawfiq Ziad,75,Male,178.0,89.0,T2D,21.1,Hypertension,7.9,Metformin + SGLT2i,77,Mild Fatigue
+P070,Safia Kamel,50,Female,160.0,67.5,Gestational,0.9,,6.7,Diet/Lifestyle Only,107,
+P071,Ehab Gomaa,55,Male,175.0,83.2,T2D,12.0,Dyslipidemia,7.3,Metformin + GLP-1 RA,91,
+P072,Noha Said,63,Female,162.0,70.1,T2D,16.5,Hypertension,8.0,Metformin,78,Mild Fatigue
+P073,Hesham Ramy,38,Male,184.0,99.5,T2D,2.5,,10.9,Diet/Lifestyle Only,104,Increased Thirst
+P074,Samia Essam,71,Female,157.0,65.8,T2D,20.0,History of CVD,9.3,Insulin Glargine,58,Numbness in feet
+P075,Rashed Kamal,44,Male,170.0,76.0,T1D,14.0,,7.6,Insulin Pump,111,
+P076,Dalia Moheb,59,Female,168.0,85.4,T2D,10.1,,6.4,Metformin + SGLT2i,88,
+P077,Mounir Fouad,67,Male,173.0,88.0,T2D,18.2,CKD Stage 4,8.7,Insulin Glargine,39,Frequent Urination
+P078,Ghada Zaki,32,Female,166.0,60.5,T1D,8.5,,8.1,Insulin Pen,114,
+P079,Tarek Hossam,79,Male,176.0,82.5,T2D,29.0,Hypertension,9.9,Metformin + SGLT2i,70,Mild Fatigue
+P080,Safaa Yasser,51,Female,163.0,71.9,Gestational,0.7,,7.1,Diet/Lifestyle Only,100,
+P081,Amgad Said,46,Male,180.0,90.0,T2D,3.0,Dyslipidemia,11.2,Metformin,95,Increased Thirst
+P082,Hanaa Omar,68,Female,159.0,75.3,T2D,15.0,Hypertension,7.4,Metformin + GLP-1 RA,81,
+P083,Zaki Anwar,29,Male,178.0,77.5,T1D,6.5,,6.9,Insulin Pen,118,
+P084,Mariam Fadi,73,Female,164.0,80.2,T2D,23.0,History of CVD,8.6,Metformin + SGLT2i,66,Frequent Urination
+P085,Waleed Maher,57,Male,172.0,84.1,T2D,9.0,,7.7,Metformin + DPP-4i,77,Mild Fatigue
+P086,Souad Tawfiq,61,Female,165.0,73.8,T2D,14.5,Dyslipidemia,6.7,Diet/Lifestyle Only,90,
+P087,Adel Safwan,76,Male,170.0,81.0,T2D,27.0,CKD Stage 3,9.0,Insulin Glargine,45,Numbness in feet
+P088,Heba Karim,35,Female,167.0,68.4,T1D,13.0,,8.3,Insulin Pump,105,
+P089,Younis Hani,49,Male,182.0,93.7,T2D,7.0,Hypertension,8.1,Metformin,92,
+P090,Lina Riad,54,Female,160.0,70.9,T2D,10.8,,7.0,Metformin + SGLT2i,85,
+P091,Farah Yassin,56,Female,162.0,75.0,T2D,11.8,Hypertension,7.8,Metformin + SGLT2i,88,
+P092,Maher Zaki,69,Male,175.0,94.1,T2D,19.0,History of CVD,8.5,Insulin Glargine,62,Mild Fatigue
+P093,Sawsan Hani,39,Female,168.0,66.7,T1D,15.0,,7.4,Insulin Pump,110,
+P094,Jamil Fares,72,Male,171.0,82.9,T2D,22.5,Dyslipidemia,6.6,Metformin,95,
+P095,Randa Said,45,Female,165.0,77.3,T2D,3.8,,10.3,Diet/Lifestyle Only,100,Increased Thirst
+P096,Akram Moaz,64,Male,179.0,91.5,T2D,13.0,CKD Stage 3,8.1,Metformin + GLP-1 RA,46,Frequent Urination
+P097,Lama Omar,30,Female,167.0,62.0,T1D,7.0,,7.9,Insulin Pen,115,
+P098,Ashraf Huda,78,Male,176.0,88.0,T2D,30.0,Hypertension,9.2,Metformin + SGLT2i,74,Numbness in feet
+P099,Walaa Nabil,53,Female,164.0,70.8,T2D,9.5,,6.5,Metformin,98,
+P100,Tamer Wael,47,Male,182.0,96.5,T2D,5.2,Dyslipidemia,7.7,Metformin + DPP-4i,85,Mild Fatigue
+P101,Salma Shahe,22,Female,169.0,58.0,T2D,15.0,"CKD Stage 3, Hypertension",9.0,Metformin 850mg,55,Numbness in feet

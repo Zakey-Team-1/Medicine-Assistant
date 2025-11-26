@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ action }} Patient</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="patient_id" class="form-label">Patient ID</label>
+                            <input type="text" class="form-control" id="patient_id" name="patient_id" value="{{ patient.patient_id or '' }}" {% if action == 'Edit' %}readonly{% endif %} required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ patient.name or '' }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="age" class="form-label">Age</label>
+                            <input type="number" class="form-control" id="age" name="age" value="{{ patient.age or '' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="gender" class="form-label">Gender</label>
+                            <select class="form-select" id="gender" name="gender">
+                                <option value="Male" {% if patient.gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if patient.gender == 'Female' %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if patient.gender == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="diabetes_type" class="form-label">Diabetes Type</label>
+                            <select class="form-select" id="diabetes_type" name="diabetes_type">
+                                <option value="Type 1" {% if patient.diabetes_type == 'Type 1' %}selected{% endif %}>Type 1</option>
+                                <option value="Type 2" {% if patient.diabetes_type == 'Type 2' %}selected{% endif %}>Type 2</option>
+                                <option value="Gestational" {% if patient.diabetes_type == 'Gestational' %}selected{% endif %}>Gestational</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="height_cm" class="form-label">Height (cm)</label>
+                            <input type="number" step="0.1" class="form-control" id="height_cm" name="height_cm" value="{{ patient.height_cm or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="weight_kg" class="form-label">Weight (kg)</label>
+                            <input type="number" step="0.1" class="form-control" id="weight_kg" name="weight_kg" value="{{ patient.weight_kg or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="comorbidities" class="form-label">Comorbidities</label>
+                        <textarea class="form-control" id="comorbidities" name="comorbidities" rows="2">{{ patient.comorbidities or '' }}</textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="latest_hba1c" class="form-label">Latest HbA1c (%)</label>
+                            <input type="number" step="0.1" class="form-control" id="latest_hba1c" name="latest_hba1c" value="{{ patient.latest_hba1c or '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="egfr_ml_min" class="form-label">eGFR (ml/min)</label>
+                            <input type="number" step="0.1" class="form-control" id="egfr_ml_min" name="egfr_ml_min" value="{{ patient.egfr_ml_min or '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="duration_years" class="form-label">Duration (Years)</label>
+                            <input type="number" step="0.1" class="form-control" id="duration_years" name="duration_years" value="{{ patient.duration_years or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="current_meds" class="form-label">Current Medications</label>
+                        <textarea class="form-control" id="current_meds" name="current_meds" rows="3">{{ patient.current_meds or '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="recent_symptoms" class="form-label">Recent Symptoms</label>
+                        <textarea class="form-control" id="recent_symptoms" name="recent_symptoms" rows="2">{{ patient.recent_symptoms or '' }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">{{ action }} Patient</button>
+                        <a href="/" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
