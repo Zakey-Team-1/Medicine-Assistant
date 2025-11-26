@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  medicine-assistant:
+    build: .
+    container_name: medicine-assistant
+    ports:
+      - "8002:8002"
+    environment:
+      - FLASK_APP=src/web/app.py
+      - FLASK_ENV=production
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - user=${user}
+      - password=${password}
+      - host=${host}
+      - port=${port}
+      - dbname=${dbname}
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - ./chroma_db:/app/chroma_db
+      - ./src:/app/src
+    networks:
+      - medicine-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  medicine-net:
+    driver: bridge

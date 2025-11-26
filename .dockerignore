@@ -1,0 +1,43 @@
+# Python dependencies
+*.pyc
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Flask
+instance/
+.webassets-cache
+
+# Environment files
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.sqlite3
+*.db
+
+# Build outputs
+build/
+dist/
+*.egg
+
+# Logs
+*.log
+
+# Temp files
+tmp/
+temp/

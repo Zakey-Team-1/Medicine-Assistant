@@ -24,8 +24,9 @@ dependencies = [
     "httpx>=0.27.0",
     "pypdf",
     "supabse",
-    "psycopg2",
-    "flask",
+    "psycopg2-binary>=2.9.0",
+    "flask>=2.3.0",
+    "gunicorn>=21.0.0",
 ]
 
 [project.optional-dependencies]
