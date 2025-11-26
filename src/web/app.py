@@ -174,18 +174,18 @@ def consult():
         if not agent:
             flash("Agent not initialized. Check configuration.", "danger")
         else:
-            # Gather data from form
+            # Gather data from form and database (use actual lowercase column names)
             consult_data = {
                 "patient_id": patient_id,
-                "name": patient['Name'] if patient else request.form.get('name', 'Unknown'),
-                "latest_hba1c": request.form.get('latest_hba1c'),
+                "name": (patient.get('name') if patient else request.form.get('name', 'Unknown')),
+                "latest_hba1c": request.form.get('latest_hba1c') or (patient.get('latest_hba1c') if patient else None),
                 "blood_glucose": request.form.get('blood_glucose'),
                 "blood_pressure": request.form.get('blood_pressure'),
-                "egfr": request.form.get('egfr'),
+                "egfr": request.form.get('egfr') or (patient.get('egfr_ml_min') if patient else None),
                 "lipid_panel": request.form.get('lipid_panel'),
-                "symptoms_notes": request.form.get('symptoms_notes'),
+                "symptoms_notes": request.form.get('symptoms_notes') or (patient.get('recent_symptoms') if patient else ''),
                 "treatment_adjustments": request.form.get('treatment_adjustments'),
-                "current_meds": patient['Current_Meds'] if patient else request.form.get('current_meds', '')
+                "current_meds": (patient.get('current_meds') if patient else request.form.get('current_meds', ''))
             }
             
             # Construct a detailed query for the agent
