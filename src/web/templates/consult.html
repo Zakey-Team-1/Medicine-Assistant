@@ -152,12 +152,16 @@
                     const patHtmlAr = {{ patient_html_ar | tojson | safe }};
 
                     // Download helper: send rendered HTML to server for PDF generation
-                    async function downloadReport(type, html, filename) {
+                    async function downloadReport(type, html, filename, direction = 'ltr') {
                         try {
                             const res = await fetch(`/consult/pdf/${type}`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ html: html, filename: filename })
+                                body: JSON.stringify({
+                                    html: html,
+                                    filename: filename,
+                                    direction: direction  
+                                })
                             });
                             if (!res.ok) {
                                 const err = await res.json().catch(() => ({}));
@@ -184,8 +188,8 @@
                     const dlPatEn = document.getElementById('download-patient-en');
                     const dlPatAr = document.getElementById('download-patient-ar');
                     if (dlPhys) dlPhys.addEventListener('click', () => downloadReport('physician', physHtml, 'physician_report.pdf'));
-                    if (dlPatEn) dlPatEn.addEventListener('click', () => downloadReport('patient', patHtml, 'patient_report_en.pdf'));
-                    if (dlPatAr) dlPatAr.addEventListener('click', () => downloadReport('patient', patHtmlAr, 'patient_report_ar.pdf'));
+                    if (dlPatEn) dlPatEn.addEventListener('click', () => downloadReport('patient', patHtml, 'patient_report_en.pdf', 'ltr'));
+                    if (dlPatAr) dlPatAr.addEventListener('click', () => downloadReport('patient', patHtmlAr, 'patient_report_ar.pdf', 'rtl'));
 
                     const pContainer = document.getElementById('report-physician');
                     const ptContainer = document.getElementById('report-patient');
