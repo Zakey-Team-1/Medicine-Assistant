@@ -16,10 +16,25 @@ FROM python:3.10-slim
 # Set working directory in container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    postgresql-client \
+# Install system dependencies (include libs required by WeasyPrint)
+# Note: `libgdk-pixbuf2.0-0` is not available on some slim images; use
+# `libgdk-pixbuf-xlib-2.0-0` instead.
+RUN set -ex \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gcc \
+        postgresql-client \
+        libcairo2 \
+        libpango-1.0-0 \
+        libpangocairo-1.0-0 \
+        libgdk-pixbuf-xlib-2.0-0 \
+        libffi-dev \
+        libxml2 \
+        libxslt1.1 \
+        libjpeg62-turbo-dev \
+        zlib1g-dev \
+        pkg-config \
+        fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files

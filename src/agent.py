@@ -4,7 +4,7 @@ from typing import TypedDict
 import json
 import re
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import BaseMessage, HumanMessage
 
 from llm import get_llm
 from rag import RAGComponent
@@ -115,8 +115,6 @@ class AgentState(TypedDict):
     recommendations: str
     physician_report: str  # Separate storage for physician report
     patient_report: str    # Separate storage for patient report
-    safety_alerts: list[str]  # Critical safety issues
-    needs_clarification: bool  # Flag if more info needed
     error_message: str  # Error handling
 
 
@@ -139,72 +137,24 @@ class MedicineAssistantAgent:
     # simplify maintenance and readability we've removed the graph and call
     # components sequentially in `invoke` / `ainvoke`.
 
-    def _extract_patient_data(self, state: AgentState) -> dict:
+    def _extract_patient_data(self, state: dict) -> dict:
         """Extract and structure patient data from the query."""
         messages = state.get("messages", [])
         patient_info = state.get("patient_info", {})
-        
         # If patient_info already provided (from Flask route), use it
         if patient_info and isinstance(patient_info, dict) and len(patient_info) > 0:
             return {"patient_info": patient_info}
-        
-        if not messages:
-            return {"patient_info": {}, "needs_clarification": True}
 
-        last_message = messages[-1]
-        if not isinstance(last_message, HumanMessage):
-            return {"patient_info": {}, "needs_clarification": True}
+        # If there's a human message, store the raw message text directly
+        if messages:
+            last_message = messages[-1]
+            if isinstance(last_message, HumanMessage):
+                return {"patient_info": {"raw": last_message.content}}
 
-        content = last_message.content
+        # Fallback: empty patient_info
+        return {"patient_info": {}}
 
-        # Use LLM to extract structured patient data
-        extraction_prompt = f"""
-Extract patient information from this clinical query and return it as a JSON object.
-Include all available fields. If a field is not mentioned, use null.
-
-Expected fields:
-- name, patient_id, age, gender, weight, height, bmi
-- diabetes_type, duration_years
-- latest_hba1c, blood_glucose, blood_pressure, egfr, creatinine
-- lipid_panel (as object with ldl, hdl, triglycerides)
-- current_medications (as array of objects with name, dose, frequency)
-- treatment_adjustments, symptoms_notes
-- comorbidities (as array)
-- allergies (as array)
-
-Query:
-{content}
-
-Return ONLY valid JSON, no other text.
-"""
-        
-        try:
-            extraction_response = self.llm.invoke([HumanMessage(content=extraction_prompt)])
-
-            # Normalize to string safely (LLM return types vary)
-            resp_text = ""
-            if hasattr(extraction_response, "content") and isinstance(extraction_response.content, str):
-                resp_text = extraction_response.content
-            else:
-                resp_text = str(extraction_response)
-
-            # Extract JSON from response
-            json_match = re.search(r'\{.*\}', resp_text, re.DOTALL)
-            if json_match:
-                try:
-                    patient_data = json.loads(json_match.group())
-                except Exception:
-                    patient_data = {}
-            else:
-                patient_data = {}
-                
-        except Exception as e:
-            print(f"Extraction error: {e}")
-            patient_data = {}
-
-        return {"patient_info": patient_data}
-
-    def _retrieve_context(self, state: AgentState) -> dict:
+    def _retrieve_context(self, state: dict) -> dict:
         """Retrieve relevant context from RAG with enhanced query."""
         messages = state.get("messages", [])
         patient_info = state.get("patient_info", {})
@@ -294,28 +244,16 @@ Return ONLY valid JSON, no other text.
         
         return {"context": context}
 
-    # Note: Validation and automatic safety-identification helpers removed.
-    # The agent will rely on upstream callers to provide sufficient patient data
-    # and will not perform automatic validation or safety-alert extraction here.
-
-    def _generate_physician_report(self, state: AgentState) -> dict:
+    def _generate_physician_report(self, state: dict) -> dict:
         """Generate detailed physician report with clinical reasoning."""
         context = state.get("context", "")
         patient_info = state.get("patient_info", {})
-        safety_alerts = state.get("safety_alerts", [])
-        
-        safety_section = ""
-        if safety_alerts:
-            safety_section = "SAFETY ALERTS IDENTIFIED:\n" + "\n".join(safety_alerts)
-
         physician_prompt = f"""
 {SYSTEM_PROMPT.format(context=context)}
 
 Generate a PHYSICIAN REPORT ONLY for the following patient case.
 
 {self._format_patient_data(patient_info)}
-
-{safety_section}
 
 Provide a comprehensive physician report with:
 1. **Clinical Assessment** - Interpret all labs and current status
@@ -325,14 +263,14 @@ Provide a comprehensive physician report with:
 5. **Monitoring Plan** - Tests, frequency, targets
 6. **Immediate Concerns** - Any red flags or urgent actions needed
 
-Use clear headings and be thorough. This is for the treating physician.
+Use clear headings and be concise, don't make it too long. This is for the treating physician who understands this topic don't be too extensive.
 """
         
         response = self.llm.invoke([HumanMessage(content=physician_prompt)])
         
         return {"physician_report": response.content}
 
-    def _generate_patient_report(self, state: AgentState) -> dict:
+    def _generate_patient_report(self, state: dict) -> dict:
         """Generate patient-friendly report with clear instructions."""
         context = state.get("context", "")
         patient_info = state.get("patient_info", {})
@@ -362,33 +300,7 @@ Use simple language. Be encouraging and supportive. Avoid medical terminology or
         
         return {"patient_report": response.content}
 
-    def _handle_clarification(self, state: AgentState) -> dict:
-        """Handle cases where we need more information."""
-        error_message = state.get("error_message", "")
-        patient_info = state.get("patient_info", {})
-        
-        clarification = f"""
-I need additional information to provide safe and appropriate recommendations.
-
-Currently available information:
-{json.dumps(patient_info, indent=2)}
-
-Missing or incomplete data:
-{error_message}
-
-To generate comprehensive reports, I need at minimum:
-- Latest HbA1c value
-- Current kidney function (eGFR or creatinine)
-- Patient age and weight
-- Current diabetes medications
-- Diabetes type and duration
-
-Please provide the missing information so I can assist you effectively.
-"""
-        
-        return {
-            "messages": state.get("messages", []) + [AIMessage(content=clarification)]
-        }
+    # Clarification handling removed — callers should supply sufficient data.
 
     def _format_patient_data(self, patient_info: dict) -> str:
         """Format patient data for LLM prompts."""
@@ -425,7 +337,7 @@ Please provide the missing information so I can assist you effectively.
             patient_info: Optional patient information (dict preferred, str accepted for backwards compatibility).
 
         Returns:
-            Dictionary with physician_report, patient_report, and safety_alerts.
+            Dictionary with `physician_report`, `patient_report`, and `patient_info`.
         """
         # Handle backwards compatibility - convert string to dict if needed
         if isinstance(patient_info, str):
@@ -437,15 +349,13 @@ Please provide the missing information so I can assist you effectively.
         
         # Prepare initial state
         messages: list[BaseMessage] = [HumanMessage(content=message)]
-        state: AgentState = {
+        state: dict = {
             "messages": messages,
             "context": "",
             "patient_info": patient_info or {},
             "recommendations": "",
             "physician_report": "",
             "patient_report": "",
-            "safety_alerts": [],
-            "needs_clarification": False,
             "error_message": "",
         }
 
@@ -459,8 +369,7 @@ Please provide the missing information so I can assist you effectively.
         ctx = self._retrieve_context(state)
         state["context"] = ctx.get("context", "")
 
-        # Safety-alert identification removed; leave alerts empty for caller
-        state["safety_alerts"] = []
+        # Safety-alert identification removed; nothing to set here.
 
         # 4) Generate reports sequentially
         phys = self._generate_physician_report(state)
@@ -472,8 +381,6 @@ Please provide the missing information so I can assist you effectively.
         return {
             "physician_report": state["physician_report"],
             "patient_report": state["patient_report"],
-            "safety_alerts": state["safety_alerts"],
-            "needs_clarification": False,
             "patient_info": state.get("patient_info", {}),
         }
 
@@ -514,10 +421,9 @@ if __name__ == "__main__":
     
     result = agent.invoke(query)
     
-    print("=== SAFETY ALERTS ===")
-    for alert in result["safety_alerts"]:
-        print(alert)
-    
+    print("\n=== PATIENT INFO (raw) ===")
+    print(result.get("patient_info", {}))
+
     print("\n=== PHYSICIAN REPORT ===")
     print(result["physician_report"])
     
