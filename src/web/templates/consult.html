@@ -131,6 +131,9 @@
                             .report-prose pre { background-color: #0f1722; padding: 0.75rem; border-radius: 0.5rem; overflow: auto; }
                             .report-prose code { background-color: rgba(255,255,255,0.03); padding: 0.12rem 0.25rem; border-radius: 0.25rem; }
                             .report-prose h1, .report-prose h2, .report-prose h3, .report-prose h4 { margin-top: 1rem; margin-bottom: 0.5rem; }
+                            /* RTL support for Arabic patient report */
+                            .report-prose.rtl { direction: rtl; text-align: right; }
+                            .report-prose.rtl p, .report-prose.rtl li { direction: rtl; text-align: right; }
                         </style>
 
                         <div id="report-physician" class="prose prose-invert report-prose max-w-none text-gray-100">
@@ -187,11 +190,20 @@
                     const pContainer = document.getElementById('report-physician');
                     const ptContainer = document.getElementById('report-patient');
 
-                    function renderTo(container, html) {
+                    function renderTo(container, html, opts = {}) {
                         if (!container) return;
                         try {
                             const safe = DOMPurify.sanitize(html || '');
                             container.innerHTML = safe;
+                            if (opts.lang) container.setAttribute('lang', opts.lang);
+                            if (opts.dir) {
+                                container.setAttribute('dir', opts.dir);
+                                if (opts.dir === 'rtl') container.classList.add('rtl');
+                                else container.classList.remove('rtl');
+                            } else {
+                                container.removeAttribute('dir');
+                                container.classList.remove('rtl');
+                            }
                         } catch (e) {
                             container.textContent = html || '';
                         }
@@ -200,15 +212,15 @@
                     renderTo(pContainer, physHtml || '');
                     // Default patient view: English
                     let patientCurrentLang = 'en';
-                    renderTo(ptContainer, patHtml || '');
+                    renderTo(ptContainer, patHtml || '', { dir: 'ltr', lang: 'en' });
 
                     // Language toggle handlers
                     const langEnBtn = document.getElementById('lang-en');
                     const langArBtn = document.getElementById('lang-ar');
                     function setPatientLang(lang) {
                         patientCurrentLang = lang;
-                        if (lang === 'ar') renderTo(ptContainer, patHtmlAr || '');
-                        else renderTo(ptContainer, patHtml || '');
+                        if (lang === 'ar') renderTo(ptContainer, patHtmlAr || '', { dir: 'rtl', lang: 'ar' });
+                        else renderTo(ptContainer, patHtml || '', { dir: 'ltr', lang: 'en' });
                         // update active styles
                         if (langEnBtn && langArBtn) {
                             if (lang === 'en') {
