@@ -1,14 +1,23 @@
+import io
 import os
+import re
 import sys
 from pathlib import Path
-
-# Add src to path to allow imports from sibling modules
-sys.path.append(str(Path(__file__).parent.parent))
-
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, flash, redirect, render_template, request, url_for, send_file, jsonify
+from markdown import markdown as md_to_html
+try:
+    from weasyprint import HTML, CSS
+except Exception:
+    HTML = None
+    CSS = None
+from utils.translate import translate_en_to_ar
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
+
+# Ensure `src` package is importable when running this script directly
+sys.path.append(str(Path(__file__).parent.parent))
+
 from agent import MedicineAssistantAgent
 
 load_dotenv()
@@ -43,6 +52,10 @@ except Exception as e:
 
 @app.route('/')
 def index():
+    return render_template('index.html')
+
+@app.route('/patients')
+def patients():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
@@ -54,7 +67,7 @@ def index():
     finally:
         cur.close()
         conn.close()
-    return render_template('index.html', patients=patients)
+    return render_template('patients.html', patients=patients)
 
 @app.route('/patient/add', methods=('GET', 'POST'))
 def add_patient():
@@ -89,7 +102,7 @@ def add_patient():
             cur.close()
             conn.close()
             flash('Patient added successfully!', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('patients'))
         except Exception as e:
             flash(f"Error adding patient: {e}", 'danger')
             
@@ -125,7 +138,7 @@ def edit_patient(patient_id):
             ))
             conn.commit()
             flash('Patient updated successfully!', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('patients'))
         except Exception as e:
             flash(f"Error updating patient: {e}", 'danger')
         finally:
@@ -138,7 +151,7 @@ def edit_patient(patient_id):
         conn.close()
         if not patient:
             flash('Patient not found', 'danger')
-            return redirect(url_for('index'))
+            return redirect(url_for('patients'))
         return render_template('patient_form.html', action='Edit', patient=patient)
 
 @app.route('/patient/delete/<patient_id>', methods=('POST',))
@@ -169,56 +182,240 @@ def consult():
         cur.close()
         conn.close()
     
-    response = None
+    result = None
     if request.method == 'POST':
         if not agent:
             flash("Agent not initialized. Check configuration.", "danger")
         else:
-            # Gather data from form and database (use actual lowercase column names)
-            consult_data = {
-                "patient_id": patient_id,
-                "name": (patient.get('name') if patient else request.form.get('name', 'Unknown')),
-                "latest_hba1c": request.form.get('latest_hba1c') or (patient.get('latest_hba1c') if patient else None),
-                "blood_glucose": request.form.get('blood_glucose'),
-                "blood_pressure": request.form.get('blood_pressure'),
-                "egfr": request.form.get('egfr') or (patient.get('egfr_ml_min') if patient else None),
-                "lipid_panel": request.form.get('lipid_panel'),
-                "symptoms_notes": request.form.get('symptoms_notes') or (patient.get('recent_symptoms') if patient else ''),
-                "treatment_adjustments": request.form.get('treatment_adjustments'),
-                "current_meds": (patient.get('current_meds') if patient else request.form.get('current_meds', ''))
-            }
-            
-            # Construct a detailed query for the agent
-            query = f"""
-            Please analyze the following patient data and provide recommendations:
-            
-            Patient: {consult_data['name']} (ID: {consult_data['patient_id']})
-            
-            Current Vitals & Labs:
-            - Latest HbA1c: {consult_data['latest_hba1c']}%
-            - Immediate Blood Glucose: {consult_data['blood_glucose']} mg/dL
-            - Blood Pressure: {consult_data['blood_pressure']} mmHg
-            - eGFR: {consult_data['egfr']} ml/min
-            - Lipid Panel: {consult_data['lipid_panel']}
-            
-            Clinical Notes:
-            - Symptoms/Notes: {consult_data['symptoms_notes']}
-            - Recent Treatment Adjustments: {consult_data['treatment_adjustments']}
-            - Current Medications (from record): {consult_data['current_meds']}
-            
-            Based on this, please provide:
-            1. Assessment of current control.
-            2. Recommendations for medication adjustment if needed.
-            3. Suggested monitoring plan.
-            """
-            
             try:
-                # Invoke the agent
-                response = agent.invoke(query, patient_info=str(consult_data))
-            except Exception as e:
-                flash(f"Error generating report: {e}", "danger")
+                # Gather structured patient data from form and database
+                consult_data = {
+                    # Basic identification
+                    "patient_id": patient_id,
+                    "name": patient.get('name') if patient else request.form.get('name', 'Unknown'),
+                    
+                    # Demographics
+                    "age": request.form.get('age') or (patient.get('age') if patient else None),
+                    "gender": request.form.get('gender') or (patient.get('gender') if patient else None),
+                    "weight": request.form.get('weight') or (patient.get('weight_kg') if patient else None),
+                    
+                    # Diabetes profile
+                    "diabetes_type": request.form.get('diabetes_type') or (patient.get('diabetes_type') if patient else None),
+                    "duration_years": request.form.get('duration_years') or (patient.get('duration_years') if patient else None),
+                    
+                    # Lab values
+                    "latest_hba1c": request.form.get('latest_hba1c') or (patient.get('latest_hba1c') if patient else None),
+                    "blood_glucose": request.form.get('blood_glucose'),
+                    "blood_pressure": request.form.get('blood_pressure'),
+                    "egfr": request.form.get('egfr') or (patient.get('egfr_ml_min') if patient else None),
+                    "lipid_panel": request.form.get('lipid_panel'),
+                    
+                    # Clinical information
+                    "symptoms_notes": request.form.get('symptoms_notes') or (patient.get('recent_symptoms') if patient else ''),
+                    "treatment_adjustments": request.form.get('treatment_adjustments'),
+                    "current_meds": patient.get('current_meds') if patient else request.form.get('current_meds', ''),
+                    
+                    # Additional fields
+                    "comorbidities": request.form.get('comorbidities') or (patient.get('comorbidities') if patient else None),
+                    "allergies": request.form.get('allergies') or (patient.get('allergies') if patient else None),
+                }
                 
-    return render_template('consult.html', patient=patient, response=response)
+                # Clean up None values - convert to empty string for better display
+                consult_data = {k: (v if v is not None else '') for k, v in consult_data.items()}
+                
+                # Construct a simplified query - the agent will use the structured data
+                query = f"""
+Please analyze the patient data and provide comprehensive physician and patient reports.
+
+Patient: {consult_data['name']} (ID: {consult_data['patient_id']})
+
+Latest vitals and labs provided in structured data.
+"""
+                
+                # Invoke the agent with structured patient_info
+                result = agent.invoke(query, patient_info=consult_data)
+                
+                # Check if clarification is needed
+                if result.get("needs_clarification"):
+                    flash("Additional patient information is required for a complete analysis.", "warning")
+                
+                # Display safety alerts prominently
+                if result.get("safety_alerts"):
+                    for alert in result["safety_alerts"]:
+                        flash(alert, "danger")
+                        
+            except Exception as e:
+                flash(f"Error generating report: {str(e)}", "danger")
+                # Log the full error for debugging
+                import traceback
+                print(f"Error in consult route: {traceback.format_exc()}")
+                
+    # Convert returned markdown to HTML server-side so the template receives HTML
+    phys_md = result.get('physician_report', '') if result else ''
+    pat_md = result.get('patient_report', '') if result else ''
+
+    # Translate patient report to Arabic synchronously (done prior to rendering)
+    pat_md_ar = ''
+    try:
+        if pat_md:
+            pat_md_ar = translate_en_to_ar(pat_md)
+    except Exception as e:
+        # If translation fails, log and continue with empty Arabic report
+        print(f"Translation error: {e}")
+
+    phys_html = md_to_html(phys_md, extensions=['extra', 'nl2br']) if phys_md else ''
+    pat_html = md_to_html(pat_md, extensions=['extra', 'nl2br']) if pat_md else ''
+    pat_html_ar = md_to_html(pat_md_ar, extensions=['extra', 'nl2br']) if pat_md_ar else ''
+
+    return render_template('consult.html', patient=patient, result=result, physician_html=phys_html, patient_html=pat_html, patient_html_ar=pat_html_ar)
+
+
+@app.route('/consult/pdf/<report_type>', methods=('POST',))
+def consult_pdf(report_type: str):
+    """Generate a PDF for a given report type (physician|patient).
+
+    Accepts JSON body: { "md": "<markdown>", "html": "<optional full html>", "filename": "optional.pdf" }
+    If `html` is provided, it will be used directly. Otherwise `md` will be converted to HTML.
+    Uses WeasyPrint for HTML->PDF rendering. Returns PDF as attachment.
+    """
+    try:
+        data = request.get_json(force=True, silent=True) or request.form or {}
+        filename = data.get('filename') or f"{report_type}_report.pdf"
+
+        html_input = data.get('html')
+        md_input = data.get('md') or data.get('report')
+
+        if html_input:
+            body_html = html_input
+        elif md_input:
+            # Convert markdown to HTML (allowing common extensions)
+            body_html = md_to_html(md_input, extensions=['extra', 'nl2br'])
+        else:
+            body_html = ''
+
+        if HTML is None:
+            return (jsonify({'error': 'WeasyPrint is not installed on the server. Please install weasyprint and required system packages.'}), 501)
+
+        # Wrap the body_html in a minimal HTML document and include some basic styles
+        css_text = """
+            body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #111827; }
+            h1 { font-size: 18px; }
+            h2 { font-size: 16px; }
+            p { margin: 0 0 8px 0; }
+            ul { margin: 0 0 8px 18px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+            table, th, td { border: 1px solid #ddd; padding: 6px; }
+            strong { font-weight: bold; }
+            br {line-height: 1.2}
+        """
+
+        full_html = f"""
+        <!doctype html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>{report_type.title()} Report</title>
+        </head>
+        <body>
+          {body_html}
+        </body>
+        </html>
+        """
+
+        # Render PDF with WeasyPrint
+        html_obj = HTML(string=full_html, base_url=request.base_url)
+        pdf_bytes = html_obj.write_pdf(stylesheets=[CSS(string=css_text)])
+
+        bio = io.BytesIO(pdf_bytes)
+        bio.seek(0)
+        return send_file(bio, as_attachment=True, download_name=filename, mimetype='application/pdf')
+    except Exception as e:
+        print(f"Error generating PDF: {e}")
+        return (jsonify({'error': str(e)}), 500)
+
+
+# Alternative: Async version if using async Flask (e.g., with Quart)
+@app.route('/consult', methods=('GET', 'POST'))
+async def consult_async():
+    patient_id = request.args.get('patient_id') or request.form.get('patient_id')
+    patient = None
+    
+    if patient_id:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute('SELECT * FROM Patients WHERE Patient_ID = %s', (patient_id,))
+        patient = cur.fetchone()
+        cur.close()
+        conn.close()
+    
+    result = None
+    if request.method == 'POST':
+        if not agent:
+            flash("Agent not initialized. Check configuration.", "danger")
+        else:
+            try:
+                # Gather structured patient data
+                consult_data = {
+                    "patient_id": patient_id,
+                    "name": patient.get('name') if patient else request.form.get('name', 'Unknown'),
+                    "age": request.form.get('age') or (patient.get('age') if patient else None),
+                    "gender": request.form.get('gender') or (patient.get('gender') if patient else None),
+                    "weight": request.form.get('weight') or (patient.get('weight_kg') if patient else None),
+                    "diabetes_type": request.form.get('diabetes_type') or (patient.get('diabetes_type') if patient else None),
+                    "duration_years": request.form.get('duration_years') or (patient.get('duration_years') if patient else None),
+                    "latest_hba1c": request.form.get('latest_hba1c') or (patient.get('latest_hba1c') if patient else None),
+                    "blood_glucose": request.form.get('blood_glucose'),
+                    "blood_pressure": request.form.get('blood_pressure'),
+                    "egfr": request.form.get('egfr') or (patient.get('egfr_ml_min') if patient else None),
+                    "lipid_panel": request.form.get('lipid_panel'),
+                    "symptoms_notes": request.form.get('symptoms_notes') or (patient.get('recent_symptoms') if patient else ''),
+                    "treatment_adjustments": request.form.get('treatment_adjustments'),
+                    "current_meds": patient.get('current_meds') if patient else request.form.get('current_meds', ''),
+                    "comorbidities": request.form.get('comorbidities') or (patient.get('comorbidities') if patient else None),
+                    "allergies": request.form.get('allergies') or (patient.get('allergies') if patient else None),
+                }
+                
+                consult_data = {k: (v if v is not None else '') for k, v in consult_data.items()}
+                
+                query = f"Please analyze patient {consult_data['name']} (ID: {consult_data['patient_id']}) and provide comprehensive reports."
+                
+                # Use async invoke
+                result = await agent.ainvoke(query, patient_info=consult_data)
+                
+                if result.get("needs_clarification"):
+                    flash("Additional patient information is required for a complete analysis.", "warning")
+                
+                if result.get("safety_alerts"):
+                    for alert in result["safety_alerts"]:
+                        flash(alert, "danger")
+                        
+            except Exception as e:
+                flash(f"Error generating report: {str(e)}", "danger")
+                import traceback
+                print(f"Error in consult route: {traceback.format_exc()}")
+                
+    # Convert returned markdown to HTML server-side so the template receives HTML
+    phys_md = result.get('physician_report', '') if result else ''
+    pat_md = result.get('patient_report', '') if result else ''
+
+    # Translate patient report to Arabic synchronously (done prior to rendering)
+    pat_md_ar = ''
+    try:
+        if pat_md:
+            pat_md_ar = translate_en_to_ar(pat_md)
+    except Exception as e:
+        print(f"Translation error: {e}")
+
+    phys_html = md_to_html(phys_md, extensions=['extra', 'nl2br']) if phys_md else ''
+    pat_html = md_to_html(pat_md, extensions=['extra', 'nl2br']) if pat_md else ''
+    pat_html_ar = md_to_html(pat_md_ar, extensions=['extra', 'nl2br']) if pat_md_ar else ''
+
+    return render_template('consult.html', patient=patient, result=result, physician_html=phys_html, patient_html=pat_html, patient_html_ar=pat_html_ar)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 if __name__ == '__main__':
     # Get port from environment variable or default to 5000 for local development

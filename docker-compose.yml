@@ -5,7 +5,7 @@ services:
     ports:
       - "8002:8002"
     environment:
-      - FLASK_APP=src/web/app.py
+      - FLASK_APP=src.web.app:app
       - FLASK_ENV=production
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - user=${user}

@@ -64,17 +64,20 @@ class RAGComponent:
             search_kwargs={"k": settings.TOP_K_RESULTS},
         )
 
-    def retrieve(self, query: str) -> list[Document]:
+    def retrieve(self, query: str, k: int | None = None) -> list[Document]:
         """
         Retrieve relevant documents for a query.
 
         Args:
             query: The search query.
+            k: Optional number of results to return. If None, uses the
+               configured `settings.TOP_K_RESULTS`.
 
         Returns:
             List of relevant documents.
         """
+        top_k = k if (k is not None) else settings.TOP_K_RESULTS
         return self.vector_store.similarity_search(
             query,
-            k=settings.TOP_K_RESULTS,
+            k=top_k,
         )

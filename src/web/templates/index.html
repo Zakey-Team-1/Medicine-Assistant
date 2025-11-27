@@ -1,49 +1,162 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row mb-3">
-    <div class="col">
-        <h2>Patients Directory</h2>
-    </div>
-    <div class="col text-end">
-        <a href="/patient/add" class="btn btn-success">Add New Patient</a>
-    </div>
-</div>
+<div class="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white">
+  <!-- Hero Section -->
+  <div class="container mx-auto px-4 py-16 text-center">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">Medicine Assistant</h1>
+      <p class="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">AI-powered diabetes care</p>
+      <p class="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">concise clinician reports and clear patient summaries</p>
 
-<div class="table-responsive">
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Age/Gender</th>
-                <th>Type</th>
-                <th>HbA1c</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for patient in patients %}
-            <tr>
-                <td>{{ patient.patient_id }}</td>
-                <td>{{ patient.name }}</td>
-                <td>{{ patient.age }} / {{ patient.gender }}</td>
-                <td>{{ patient.diabetes_type }}</td>
-                <td>{{ patient.latest_hba1c }}%</td>
-                <td>
-                    <a href="/consult?patient_id={{ patient.patient_id }}" class="btn btn-sm btn-primary">Consult</a>
-                    <a href="/patient/edit/{{ patient.patient_id }}" class="btn btn-sm btn-warning">Edit</a>
-                    <form action="/patient/delete/{{ patient.patient_id }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
-                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6" class="text-center">No patients found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="/consult" class="inline-flex items-center bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg text-base shadow-sm">Start a Consultation</a>
+        <a href="/patients" class="inline-flex items-center border border-gray-700 text-gray-200 py-3 px-6 rounded-lg text-base hover:bg-gray-800/40">View Patients</a>
+      </div>
+
+      <div class="mt-4 flex justify-center gap-6 text-sm text-gray-400">
+        <div class="px-3 py-2 bg-gray-800 rounded-full">Fast</div>
+        <div class="px-3 py-2 bg-gray-800 rounded-full">Accurate</div>
+        <div class="px-3 py-2 bg-gray-800 rounded-full">Friendly</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it Works (three steps) -->
+  <div class="py-6">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-6">
+        <h2 class="text-3xl font-semibold">How It Works</h2>
+        <p class="text-gray-400 mt-2 max-w-2xl mx-auto">A simple 3-step flow for clinicians: load patient data, review current state, generate recommendations.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-gray-800 rounded-lg p-8 border border-gray-700 animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out hover:-translate-y-1">
+          <div class="text-primary font-semibold text-lg mb-3">1. Ingest</div>
+          <h3 class="text-lg font-semibold text-gray-100 mb-2">Data & RAG</h3>
+          <p class="text-gray-400 text-sm">Retrieve patient history and medical guidance using RAG against curated standards.</p>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg p-8 border border-gray-700 animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out hover:-translate-y-1">
+          <div class="text-primary font-semibold text-lg mb-3">2. Analyze</div>
+          <h3 class="text-lg font-semibold text-gray-100 mb-2">AI-Powered Review</h3>
+          <p class="text-gray-400 text-sm">LLM pipelines summarize labs, vitals and medications to surface risks and options.</p>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg p-8 border border-gray-700 animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out hover:-translate-y-1">
+          <div class="text-primary font-semibold text-lg mb-3">3. Report</div>
+          <h3 class="text-lg font-semibold text-gray-100 mb-2">Dual Reports</h3>
+          <p class="text-gray-400 text-sm">Clinician-facing recommendations and a simplified patient summary for shared decision making.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features / Highlights -->
+  <div class="py-20">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div>
+          <h2 class="text-3xl font-semibold mb-4">Built for Clinical Workflows</h2>
+          <p class="text-gray-400 mb-4">Designed to integrate into real world consultations — minimal clicks, clear outputs, and reproducible notes.</p>
+          <ul class="list-disc list-inside text-gray-400 space-y-2">
+            <li>Fast patient search and toggleable list/grid views.</li>
+            <li>Focused consultation UI with targeted inputs and automated suggestions.</li>
+            <li>Exportable reports and streamlined edit workflows for records.</li>
+          </ul>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-gray-800 p-6 rounded-lg text-center animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out hover:-translate-y-1">
+            <p class="text-lg font-semibold">Real-time</p>
+            <p class="text-gray-400 text-sm">Instant analysis</p>
+          </div>
+          <div class="bg-gray-800 p-6 rounded-lg text-center animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out hover:-translate-y-1">
+            <p class="text-lg font-semibold">Evidence</p>
+            <p class="text-gray-400 text-sm">Guideline-linked</p>
+          </div>
+          <div class="bg-gray-800 p-6 rounded-lg text-center animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out hover:-translate-y-1">
+            <p class="text-lg font-semibold">Secure</p>
+            <p class="text-gray-400 text-sm">Local data support</p>
+          </div>
+          <div class="bg-gray-800 p-6 rounded-lg text-center animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out hover:-translate-y-1">
+            <p class="text-lg font-semibold">Extensible</p>
+            <p class="text-gray-400 text-sm">Plug LLM providers</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech Stack Section -->
+  <div class="py-20 bg-gray-900">
+    <div class="container mx-auto px-4 text-center">
+      <h2 class="text-3xl font-semibold mb-6">Technology Stack</h2>
+      <div class="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
+        <div class="bg-gray-800 px-5 py-4 rounded-lg animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out">Gemini</div>
+        <div class="bg-gray-800 px-5 py-4 rounded-lg animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out">ChromaDB</div>
+        <div class="bg-gray-800 px-5 py-4 rounded-lg animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out">OpenAI Embeddings</div>
+        <div class="bg-gray-800 px-5 py-4 rounded-lg animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out">Flask</div>
+        <div class="bg-gray-800 px-5 py-4 rounded-lg animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out">Tailwind CSS</div>
+        <div class="bg-gray-800 px-5 py-4 rounded-lg animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out">LangChain</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The Team Section -->
+  <div class="py-20">
+    <div class="container mx-auto px-4 text-center">
+      <h2 class="text-3xl font-semibold mb-6">The Team</h2>
+      <div class="flex flex-wrap justify-center gap-6">
+        <div class="bg-gray-800 px-4 py-3 rounded-lg w-full sm:w-auto flex items-center gap-3 animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out">
+          <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-lg font-bold">IY</div>
+          <div class="text-left">
+            <p class="font-semibold">Ibrahim Younis</p>
+            <a href="https://www.linkedin.com/in/ibrahimyounis33/" target="_blank" class="text-gray-400 text-sm">LinkedIn</a>
+          </div>
+        </div>
+
+        <div class="bg-gray-800 px-4 py-3 rounded-lg w-full sm:w-auto flex items-center gap-3 animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out">
+          <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-lg font-bold">SS</div>
+          <div class="text-left">
+            <p class="font-semibold">Salma Shaheen</p>
+            <a href="https://www.linkedin.com/in/salma-t-shaheen/" target="_blank" class="text-gray-400 text-sm">LinkedIn</a>
+          </div>
+        </div>
+
+        <div class="bg-gray-800 px-4 py-3 rounded-lg w-full sm:w-auto flex items-center gap-3 animate-item opacity-0 translate-y-6 transition-all duration-700 ease-out">
+          <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-lg font-bold">HJ</div>
+          <div class="text-left">
+            <p class="font-semibold">Hiba Jaouni</p>
+            <a href="https://www.linkedin.com/in/hibajaouni/" target="_blank" class="text-gray-400 text-sm">LinkedIn</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Reveal .animate-item when scrolled into view. Respects prefers-reduced-motion.
+    (function() {
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const reveal = (el) => el.classList.remove('opacity-0', 'translate-y-6');
+
+      if (prefersReduced) {
+        document.querySelectorAll('.animate-item').forEach(el => reveal(el));
+        return;
+      }
+
+      const io = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            reveal(entry.target);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+
+      document.querySelectorAll('.animate-item').forEach(el => io.observe(el));
+    })();
+  </script>
 </div>
 {% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 shadow-lg rounded-lg p-8 text-gray-100">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-6">
+            <h1 class="text-3xl font-semibold mb-2">Medicine Assistant</h1>
+            <p class="text-gray-400">An intelligent assistant for diabetes care — centralize patient data, track key metrics, and generate guideline-aware recommendations.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="p-4 bg-gray-800 rounded-lg">
+                <h3 class="text-lg font-medium text-gray-100">Why it exists</h3>
+                <p class="text-gray-400 text-sm mt-2">To reduce cognitive load for clinicians by surfacing relevant patient history, trends, and evidence-based suggestions during consultations.</p>
+            </div>
+            <div class="p-4 bg-gray-800 rounded-lg">
+                <h3 class="text-lg font-medium text-gray-100">Who it's for</h3>
+                <p class="text-gray-400 text-sm mt-2">Primary care providers, endocrinologists, diabetes educators, and clinical researchers managing diabetes populations.</p>
+            </div>
+            <div class="p-4 bg-gray-800 rounded-lg">
+                <h3 class="text-lg font-medium text-gray-100">Trust & Safety</h3>
+                <p class="text-gray-400 text-sm mt-2">Outputs are suggestions only — always reviewed by a clinician. Data privacy and secure storage are priorities for deployments.</p>
+            </div>
+        </div>
+
+        <section class="mb-8 bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-2xl font-semibold mb-3">Our Approach</h2>
+            <p class="text-gray-300 mb-3">We leverage Large Language Models (LLMs) together with structured clinical data to provide concise, actionable recommendations. The core component — <code class="bg-gray-900 px-1 py-0.5 rounded text-xs">MedicineAssistantAgent</code> — synthesizes recent labs, vitals, and medications to highlight opportunities for optimization.</p>
+            <p class="text-gray-400">The agent is a decision support tool, designed to augment clinical judgment, not replace it. All recommendations should be validated by a qualified healthcare professional before changes are applied.</p>
+        </section>
+
+        <section class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-xl font-medium text-gray-100 mb-2">Key Features</h3>
+                <ul class="list-disc list-inside text-gray-400 space-y-2">
+                    <li>Patient directory with fast search and list/grid views.</li>
+                    <li>Consultation assistant that ingests latest labs and symptoms.</li>
+                    <li>AI-generated recommendations aligned to clinical guidelines.</li>
+                    <li>Exportable reports and notes for clinical documentation.</li>
+                </ul>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-xl font-medium text-gray-100 mb-2">Technology & Integrations</h3>
+                <p class="text-gray-400 text-sm mb-3">Built with a Python backend and a lightweight frontend. Optionally integrates with LLM providers for natural language reasoning and can be connected to EHR systems for data exchange.</p>
+                <p class="text-gray-400 text-sm"><strong>Stack:</strong> Flask, Tailwind CSS, ChromaDB (local), optional LLM providers.</p>
+            </div>
+        </section>
+
+        <section class="mb-8 bg-gray-800 p-6 rounded-lg">
+            <h3 class="text-xl font-medium text-gray-100 mb-3">Team & Contribution</h3>
+            <p class="text-gray-400 text-sm mb-4">This project was created by the Zakey-Team-1. Contributions are welcome — please open issues or pull requests on the repository to suggest improvements or report bugs.</p>
+            <div class="flex items-center space-x-3">
+                <a href="https://github.com/Zakey-Team-1/Medicine-Assistant" target="_blank" class="inline-block px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary-dark">View on GitHub</a>
+                <a href="/" class="inline-block px-4 py-2 border border-gray-700 text-gray-200 rounded-md text-sm hover:bg-gray-800/60">Return Home</a>
+            </div>
+        </section>
+
+        <footer class="text-center text-gray-500 text-sm">
+            <p>Medicine Assistant is a research & educational tool. It is not a substitute for professional medical advice.</p>
+            <p class="mt-2">© {{ current_year if current_year is defined else "2025" }} Zakey-Team-1</p>
+        </footer>
+    </div>
+</div>
+{% endblock %}

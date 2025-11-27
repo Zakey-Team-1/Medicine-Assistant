@@ -1,103 +1,274 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-5">
-        <div class="card mb-4">
-            <div class="card-header bg-info text-white">
-                <h4 class="mb-0">Consultation Input</h4>
+<div class="container mx-auto px-4 space-y-8">
+    <!-- Consultation Card (centered) -->
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold text-gray-100 mb-4">Consultation</h2>
+
+        <!-- Patient Loader -->
+        <form method="GET" action="/consult" class="mb-6">
+            <label for="patient_id_load" class="block text-sm font-medium text-gray-300">Load Patient</label>
+            <div class="mt-2 flex rounded-md">
+                <input type="text" id="patient_id_load" name="patient_id" placeholder="Enter Patient ID" value="{{ patient.patient_id if patient else '' }}" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-l-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm">
+                <button type="submit" class="inline-flex items-center px-4 py-2 rounded-r-md bg-primary text-white text-sm font-medium hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary">Load</button>
             </div>
-            <div class="card-body">
-                <form method="GET" action="/consult" class="mb-3">
-                    <div class="input-group">
-                        <input type="text" class="form-control" name="patient_id" placeholder="Enter Patient ID" value="{{ patient.patient_id if patient else '' }}">
-                        <button class="btn btn-outline-secondary" type="submit">Load Patient</button>
-                    </div>
-                </form>
+        </form>
 
-                {% if patient or not request.args.get('patient_id') %}
-                <form method="POST" action="/consult">
-                    <input type="hidden" name="patient_id" value="{{ patient.patient_id if patient else '' }}">
-                    
-                    {% if patient %}
-                    <div class="alert alert-secondary">
-                        <strong>Patient:</strong> {{ patient.name }} ({{ patient.age }}y/{{ patient.gender }})<br>
-                        <small>Type: {{ patient.diabetes_type }} | Duration: {{ patient.duration_years }}y</small>
-                    </div>
-                    {% endif %}
+        {% if patient or not request.args.get('patient_id') %}
+        <!-- Main Consultation Form -->
+        <form method="POST" action="/consult">
+            <input type="hidden" name="patient_id" value="{{ patient.patient_id if patient else '' }}">
 
-                    <div class="mb-3">
-                        <label for="latest_hba1c" class="form-label">Latest HbA1c (%)</label>
-                        <input type="number" step="0.1" class="form-control" id="latest_hba1c" name="latest_hba1c" 
-                               value="{{ request.form.get('latest_hba1c') or (patient.latest_hba1c if patient else '') }}" required>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="blood_glucose" class="form-label">Immediate Blood Glucose (mg/dL)</label>
-                            <input type="number" class="form-control" id="blood_glucose" name="blood_glucose" 
-                                   value="{{ request.form.get('blood_glucose') }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="blood_pressure" class="form-label">Blood Pressure (mmHg)</label>
-                            <input type="text" class="form-control" id="blood_pressure" name="blood_pressure" 
-                                   placeholder="e.g. 120/80" value="{{ request.form.get('blood_pressure') }}" required>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Functional Tests</label>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label for="egfr" class="form-label small">eGFR (ml/min)</label>
-                                <input type="number" step="0.1" class="form-control" id="egfr" name="egfr" 
-                                       value="{{ request.form.get('egfr') or (patient.egfr_ml_min if patient else '') }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="lipid_panel" class="form-label small">Lipid Panel</label>
-                                <input type="text" class="form-control" id="lipid_panel" name="lipid_panel" 
-                                       placeholder="e.g. LDL 100, HDL 50" value="{{ request.form.get('lipid_panel') }}">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="symptoms_notes" class="form-label">Symptoms and Notes</label>
-                        <textarea class="form-control" id="symptoms_notes" name="symptoms_notes" rows="3" 
-                                  placeholder="New symptoms (fatigue, thirst) or doctor's notes">{{ request.form.get('symptoms_notes') }}</textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="treatment_adjustments" class="form-label">Treatment Adjustments</label>
-                        <textarea class="form-control" id="treatment_adjustments" name="treatment_adjustments" rows="2" 
-                                  placeholder="Recent changes to medication dosages">{{ request.form.get('treatment_adjustments') }}</textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Generate Report & Recommendations</button>
-                </form>
-                {% endif %}
+            {% if patient %}
+            <div class="bg-gray-700 border-l-4 border-primary p-4 mb-6 text-gray-100" role="alert">
+                <p class="font-semibold text-lg">{{ patient.name }}</p>
+                <p class="text-sm text-gray-300">{{ patient.age }}y/{{ patient.gender }} • Type: {{ patient.diabetes_type }} • Duration: {{ patient.duration_years }}y</p>
             </div>
+            {% endif %}
+
+            <div class="space-y-4">
+                <div>
+                    <label for="latest_hba1c" class="block text-sm font-medium text-gray-200">Latest HbA1c (%)</label>
+                    <input type="number" step="0.1" id="latest_hba1c" name="latest_hba1c" value="{{ request.form.get('latest_hba1c') or (patient.latest_hba1c if patient else '') }}" required class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="blood_glucose" class="block text-sm font-medium text-gray-200">Blood Glucose (mg/dL)</label>
+                        <input type="number" id="blood_glucose" name="blood_glucose" value="{{ request.form.get('blood_glucose') }}" required class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="blood_pressure" class="block text-sm font-medium text-gray-200">Blood Pressure (mmHg)</label>
+                        <input type="text" id="blood_pressure" name="blood_pressure" placeholder="e.g. 120/80" value="{{ request.form.get('blood_pressure') }}" required class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-200">Functional Tests</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
+                        <div>
+                            <label for="egfr" class="block text-xs font-medium text-gray-400">eGFR (ml/min)</label>
+                            <input type="number" step="0.1" id="egfr" name="egfr" value="{{ request.form.get('egfr') or (patient.egfr_ml_min if patient else '') }}" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="lipid_panel" class="block text-xs font-medium text-gray-400">Lipid Panel</label>
+                            <input type="text" id="lipid_panel" name="lipid_panel" placeholder="e.g. LDL 100, HDL 50" value="{{ request.form.get('lipid_panel') }}" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="symptoms_notes" class="block text-sm font-medium text-gray-200">Symptoms & Notes</label>
+                    <textarea id="symptoms_notes" name="symptoms_notes" rows="3" placeholder="New symptoms (fatigue, thirst) or doctor's notes" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm">{{ request.form.get('symptoms_notes') }}</textarea>
+                </div>
+
+                <div>
+                    <label for="treatment_adjustments" class="block text-sm font-medium text-gray-200">Treatment Adjustments</label>
+                    <textarea id="treatment_adjustments" name="treatment_adjustments" rows="2" placeholder="Recent changes to medication dosages" class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm">{{ request.form.get('treatment_adjustments') }}</textarea>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">Generate Report & Recommendations</button>
+                </div>
+            </div>
+        </form>
+        {% endif %}
         </div>
     </div>
 
-    <div class="col-md-7">
-        <div class="card h-100">
-            <div class="card-header bg-success text-white">
-                <h4 class="mb-0">Assistant Report</h4>
+</n>    <!-- Assistant Report (wide, page-level) -->
+    <div class="max-w-5xl mx-auto">
+        <h2 class="text-2xl font-semibold text-gray-100 mb-4">Assistant Reports</h2>
+
+        {% if result %}
+            {# Extract both report strings from result (agent returns physician_report & patient_report) #}
+            {% if result is string %}
+                {% set physician_md = result %}
+                {% set patient_md = '' %}
+            {% else %}
+                {% set physician_md = result.get('physician_report', '') %}
+                {% set patient_md = result.get('patient_report', '') %}
+                {% set safety_alerts = result.get('safety_alerts', []) %}
+            {% endif %}
+
+            {# Server-rendered HTML (converted from markdown on the server) #}
+            {% set physician_html = physician_html if physician_html is defined else '' %}
+            {% set patient_html = patient_html if patient_html is defined else '' %}
+
+            {# Inline safety alerts (if any) #}
+            {% if safety_alerts %}
+              <div class="mb-4">
+                {% for alert in safety_alerts %}
+                  <div class="rounded-md px-4 py-2 mb-2 bg-red-900 text-red-200">{{ alert }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+                        <!-- Simple tabs to switch between physician and patient reports -->
+            <div class="flex gap-2 mb-4">
+              <button id="tab-physician" class="px-4 py-2 rounded-md bg-gray-800 text-gray-100 font-medium" data-target="physician">Physician Report</button>
+              <button id="tab-patient" class="px-4 py-2 rounded-md bg-gray-700 text-gray-300" data-target="patient">Patient Report</button>
             </div>
-            <div class="card-body">
-                {% if response %}
-                    <div class="report-content">
-                        {{ response | replace('\n', '<br>') | safe }}
-                    </div>
-                {% else %}
-                    <div class="text-center text-muted mt-5">
-                        <p>Fill out the consultation form to generate a report.</p>
-                        <p>The assistant will analyze the data and provide recommendations based on clinical guidelines.</p>
-                    </div>
-                {% endif %}
+
+            <div class="flex gap-2 mb-6">
+                <button id="download-physician" class="px-4 py-2 rounded-md bg-primary text-white" title="Download physician report as PDF">Download Physician PDF</button>
+                <button id="download-patient-en" class="px-4 py-2 rounded-md bg-primary text-white" title="Download patient report (English)">Download Patient PDF (EN)</button>
+                <button id="download-patient-ar" class="px-4 py-2 rounded-md bg-primary text-white" title="Download patient report (Arabic)">Download Patient PDF (AR)</button>
             </div>
-        </div>
+
+            <div class="flex gap-2 items-center mb-4">
+                <span class="text-sm text-gray-300 mr-2">Patient language:</span>
+                <button id="lang-en" class="px-3 py-1 rounded-md bg-gray-800 text-gray-100">English</button>
+                <button id="lang-ar" class="px-3 py-1 rounded-md bg-gray-700 text-gray-300">Arabic</button>
+            </div>
+
+                        <style>
+                            /* Improve spacing and readability for rendered markdown reports */
+                            .report-prose p { margin-bottom: 0.9rem; line-height: 1.6; }
+                            .report-prose li { margin-bottom: 0.45rem; line-height: 1.6; }
+                            .report-prose pre { background-color: #0f1722; padding: 0.75rem; border-radius: 0.5rem; overflow: auto; }
+                            .report-prose code { background-color: rgba(255,255,255,0.03); padding: 0.12rem 0.25rem; border-radius: 0.25rem; }
+                            .report-prose h1, .report-prose h2, .report-prose h3, .report-prose h4 { margin-top: 1rem; margin-bottom: 0.5rem; }
+                        </style>
+
+                        <div id="report-physician" class="prose prose-invert report-prose max-w-none text-gray-100">
+              <div class="text-gray-400">Rendering physician report…</div>
+            </div>
+
+                        <div id="report-patient" class="prose prose-invert report-prose max-w-none text-gray-100 hidden">
+              <div class="text-gray-400">Rendering patient report…</div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+            <script>
+                (function() {
+                    const physHtml = {{ physician_html | tojson | safe }};
+                    const patHtml = {{ patient_html | tojson | safe }};
+                    const patHtmlAr = {{ patient_html_ar | tojson | safe }};
+
+                    // Download helper: send rendered HTML to server for PDF generation
+                    async function downloadReport(type, html, filename) {
+                        try {
+                            const res = await fetch(`/consult/pdf/${type}`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ html: html, filename: filename })
+                            });
+                            if (!res.ok) {
+                                const err = await res.json().catch(() => ({}));
+                                alert('Failed to generate PDF: ' + (err.error || res.statusText));
+                                return;
+                            }
+                            const blob = await res.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = filename || `${type}_report.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                        } catch (e) {
+                            console.error('Download error', e);
+                            alert('Error generating PDF: ' + e.message);
+                        }
+                    }
+
+                    // Attach download button handlers
+                    const dlPhys = document.getElementById('download-physician');
+                    const dlPatEn = document.getElementById('download-patient-en');
+                    const dlPatAr = document.getElementById('download-patient-ar');
+                    if (dlPhys) dlPhys.addEventListener('click', () => downloadReport('physician', physHtml, 'physician_report.pdf'));
+                    if (dlPatEn) dlPatEn.addEventListener('click', () => downloadReport('patient', patHtml, 'patient_report_en.pdf'));
+                    if (dlPatAr) dlPatAr.addEventListener('click', () => downloadReport('patient', patHtmlAr, 'patient_report_ar.pdf'));
+
+                    const pContainer = document.getElementById('report-physician');
+                    const ptContainer = document.getElementById('report-patient');
+
+                    function renderTo(container, html) {
+                        if (!container) return;
+                        try {
+                            const safe = DOMPurify.sanitize(html || '');
+                            container.innerHTML = safe;
+                        } catch (e) {
+                            container.textContent = html || '';
+                        }
+                    }
+
+                    renderTo(pContainer, physHtml || '');
+                    // Default patient view: English
+                    let patientCurrentLang = 'en';
+                    renderTo(ptContainer, patHtml || '');
+
+                    // Language toggle handlers
+                    const langEnBtn = document.getElementById('lang-en');
+                    const langArBtn = document.getElementById('lang-ar');
+                    function setPatientLang(lang) {
+                        patientCurrentLang = lang;
+                        if (lang === 'ar') renderTo(ptContainer, patHtmlAr || '');
+                        else renderTo(ptContainer, patHtml || '');
+                        // update active styles
+                        if (langEnBtn && langArBtn) {
+                            if (lang === 'en') {
+                                langEnBtn.classList.add('bg-gray-800','text-gray-100');
+                                langEnBtn.classList.remove('bg-gray-700','text-gray-300');
+                                langArBtn.classList.add('bg-gray-700','text-gray-300');
+                                langArBtn.classList.remove('bg-gray-800','text-gray-100');
+                            } else {
+                                langArBtn.classList.add('bg-gray-800','text-gray-100');
+                                langArBtn.classList.remove('bg-gray-700','text-gray-300');
+                                langEnBtn.classList.add('bg-gray-700','text-gray-300');
+                                langEnBtn.classList.remove('bg-gray-800','text-gray-100');
+                            }
+                        }
+                    }
+                    if (langEnBtn) langEnBtn.addEventListener('click', () => setPatientLang('en'));
+                    if (langArBtn) langArBtn.addEventListener('click', () => setPatientLang('ar'));
+
+                    // Tab switching
+                    const tabPhys = document.getElementById('tab-physician');
+                    const tabPat = document.getElementById('tab-patient');
+
+                    function activate(tab) {
+                        if (tab === 'physician') {
+                            pContainer.classList.remove('hidden');
+                            ptContainer.classList.add('hidden');
+                            tabPhys.classList.replace('bg-gray-700','bg-gray-800');
+                            tabPhys.classList.remove('text-gray-300');
+                            tabPhys.classList.add('text-gray-100');
+                            tabPat.classList.replace('bg-gray-800','bg-gray-700');
+                            tabPat.classList.remove('text-gray-100');
+                            tabPat.classList.add('text-gray-300');
+                        } else {
+                            pContainer.classList.add('hidden');
+                            ptContainer.classList.remove('hidden');
+                            tabPat.classList.replace('bg-gray-700','bg-gray-800');
+                            tabPat.classList.remove('text-gray-300');
+                            tabPat.classList.add('text-gray-100');
+                            tabPhys.classList.replace('bg-gray-800','bg-gray-700');
+                            tabPhys.classList.remove('text-gray-100');
+                            tabPhys.classList.add('text-gray-300');
+                        }
+                    }
+
+                    tabPhys.addEventListener('click', () => activate('physician'));
+                    tabPat.addEventListener('click', () => activate('patient'));
+
+                    // Default to Physician view
+                    activate('physician');
+                })();
+            </script>
+        {% else %}
+            <div class="text-center text-gray-400 py-12 border-t border-gray-800">
+                <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-200">No report generated</h3>
+                <p class="mt-1 text-sm text-gray-400">Fill out the consultation form above to generate a report from the assistant.</p>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
