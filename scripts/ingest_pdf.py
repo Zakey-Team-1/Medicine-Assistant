@@ -4,6 +4,7 @@
 import argparse
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -11,6 +12,7 @@ from langchain_chroma import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from tqdm import tqdm
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +24,8 @@ CHROMA_PERSIST_DIRECTORY = os.getenv("CHROMA_PERSIST_DIRECTORY", "./chroma_db")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "medicine_docs")
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
+MAX_WORKERS = int(os.getenv("MAX_WORKERS", "10"))
+INGEST_BATCH_SIZE = int(os.getenv("INGEST_BATCH_SIZE", "64"))
 
 
 def validate_config() -> None:
@@ -54,13 +58,50 @@ def get_vector_store(embeddings: OpenAIEmbeddings) -> Chroma:
     )
 
 
-def ingest_pdf(pdf_path: str, persist_directory: str | None = None) -> None:
+def add_documents_concurrently(
+    vector_store: Chroma, documents: list, max_workers: int, batch_size: int
+) -> int:
+    """
+    Add documents to the vector store in parallel using a thread pool.
+
+    Args:
+        vector_store: The Chroma vector store instance.
+        documents: A list of documents to add.
+        max_workers: The maximum number of concurrent threads.
+        batch_size: The number of documents to process in each thread.
+
+    Returns:
+        The total number of chunks added.
+    """
+    total_chunks = len(documents)
+    # Split documents into batches
+    batches = [
+        documents[i : i + batch_size] for i in range(0, total_chunks, batch_size)
+    ]
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        print(
+            f"⚡️ Starting concurrent ingestion with {max_workers} workers and {len(batches)} batches..."
+        )
+        # Create a future for each batch
+        futures = [
+            executor.submit(vector_store.add_documents, batch) for batch in batches
+        ]
+
+        # Use tqdm for a progress bar
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Ingesting Batches"):
+            future.result()  # Wait for the batch to complete and raise any exceptions
+
+    return total_chunks
+
+
+def ingest_pdf(pdf_path: str, vector_store: Chroma) -> None:
     """
     Ingest a single PDF file into the vector store.
 
     Args:
         pdf_path: Path to the PDF file to ingest.
-        persist_directory: Optional custom Chroma persist directory.
+        vector_store: The Chroma vector store instance.
 
     Raises:
         FileNotFoundError: If the PDF file doesn't exist.
@@ -68,24 +109,7 @@ def ingest_pdf(pdf_path: str, persist_directory: str | None = None) -> None:
     """
     pdf_file = Path(pdf_path)
 
-    # Validate file exists
-    if not pdf_file.exists():
-        raise FileNotFoundError(f"PDF file not found: {pdf_path}")
-
-    # Validate it's a PDF
-    if pdf_file.suffix.lower() != ".pdf":
-        raise ValueError(f"File is not a PDF: {pdf_path}")
-
     print(f"📄 Loading PDF: {pdf_file.name}")
-
-    # Setup embeddings and vector store
-    embeddings = get_embeddings()
-    db_path = persist_directory or CHROMA_PERSIST_DIRECTORY
-    vector_store = Chroma(
-        collection_name=COLLECTION_NAME,
-        embedding_function=embeddings,
-        persist_directory=db_path,
-    )
 
     # Load PDF documents
     loader = PyPDFLoader(str(pdf_file))
@@ -102,22 +126,22 @@ def ingest_pdf(pdf_path: str, persist_directory: str | None = None) -> None:
     splits = text_splitter.split_documents(documents)
     print(f"  ✓ Split into {len(splits)} chunks")
 
-    # Add to vector store
-    vector_store.add_documents(splits)
+    # Add to vector store concurrently
+    add_documents_concurrently(
+        vector_store, splits, max_workers=MAX_WORKERS, batch_size=INGEST_BATCH_SIZE
+    )
     print(f"✅ Successfully ingested {pdf_file.name}")
-    print(f"📊 Created {len(splits)} document chunks")
-    print(f"💾 Persisted to: {db_path}")
 
 
 def ingest_directory(
-    directory_path: str, persist_directory: str | None = None
+    directory_path: str, vector_store: Chroma
 ) -> None:
     """
     Ingest all PDF files from a directory into the vector store.
 
     Args:
         directory_path: Path to the directory containing PDF files.
-        persist_directory: Optional custom Chroma persist directory.
+        vector_store: The Chroma vector store instance.
 
     Raises:
         FileNotFoundError: If the directory doesn't exist.
@@ -137,15 +161,6 @@ def ingest_directory(
 
     print(f"📁 Found {len(pdf_files)} PDF file(s)")
 
-    # Setup embeddings and vector store
-    embeddings = get_embeddings()
-    db_path = persist_directory or CHROMA_PERSIST_DIRECTORY
-    vector_store = Chroma(
-        collection_name=COLLECTION_NAME,
-        embedding_function=embeddings,
-        persist_directory=db_path,
-    )
-
     # Setup text splitter
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
@@ -154,21 +169,23 @@ def ingest_directory(
         separators=["\n\n", "\n", " ", ""],
     )
 
-    total_chunks = 0
+    all_splits = []
 
     for pdf_file in pdf_files:
         print(f"\n📄 Processing: {pdf_file.name}")
         loader = PyPDFLoader(str(pdf_file))
         documents = loader.load()
         print(f"  ✓ Loaded {len(documents)} pages")
-
         splits = text_splitter.split_documents(documents)
-        vector_store.add_documents(splits)
-        total_chunks += len(splits)
-        print(f"  ✅ Created {len(splits)} chunks")
+        all_splits.extend(splits)
+        print(f"  ✓ Split into {len(splits)} chunks")
 
-    print(f"\n📊 Total chunks created: {total_chunks}")
-    print(f"💾 Persisted to: {db_path}")
+    print("\n---")
+    print(f"📚 Total documents to ingest: {len(all_splits)}")
+    total_chunks = add_documents_concurrently(
+        vector_store, all_splits, max_workers=MAX_WORKERS, batch_size=INGEST_BATCH_SIZE
+    )
+    print(f"\n📊 Successfully ingested {total_chunks} chunks from directory.")
 
 
 def main() -> None:
@@ -194,13 +211,29 @@ def main() -> None:
         validate_config()
         path = Path(args.path)
 
+        # Centralize setup of embeddings and vector store
+        embeddings = get_embeddings()
+        db_path = args.db_path or CHROMA_PERSIST_DIRECTORY
+        vector_store = Chroma(
+            collection_name=COLLECTION_NAME,
+            embedding_function=embeddings,
+            persist_directory=db_path,
+        )
+
         if path.is_file():
-            ingest_pdf(str(path), persist_directory=args.db_path)
+            if path.suffix.lower() != ".pdf":
+                raise ValueError(f"File is not a PDF: {path}")
+            ingest_pdf(str(path), vector_store)
         elif path.is_dir():
-            ingest_directory(str(path), persist_directory=args.db_path)
+            ingest_directory(str(path), vector_store)
         else:
             print(f"❌ Error: Path does not exist: {args.path}", file=sys.stderr)
             sys.exit(1)
+
+        # Persist and print final summary
+        print("\n---")
+        print("✅ Ingestion complete.")
+        print(f"💾 Vector store persisted to: {os.path.abspath(db_path)}")
 
     except FileNotFoundError as e:
         print(f"❌ Error: {e}", file=sys.stderr)

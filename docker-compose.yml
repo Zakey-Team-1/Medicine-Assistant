@@ -13,8 +13,6 @@ services:
       - host=${host}
       - port=${port}
       - dbname=${dbname}
-      - DATABASE_URL=${DATABASE_URL:-}
-      - SECRET_KEY=${SECRET_KEY:-medicine-assistant-dev-key}
     volumes:
       - chroma_data:/app/chroma_db
     networks:

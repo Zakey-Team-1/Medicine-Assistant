@@ -20,22 +20,17 @@ pip install -e .
 pip install -e ".[dev]"
 ```
 
-3. Set OpenRouter API key (required for integration tests and live LLM calls):
+3. Set all values in .env.example:
 
-```bash
-export OPENROUTER_API_KEY="your_openrouter_api_key"
-```
-
-4. Run tests:
-
-```bash
-# from repository root
-python -m pytest -q
-```
-
-## Configuration
+### Configuration
 - Copy `.env.example` to `.env` and set `OPENROUTER_API_KEY`.
 - Key settings are in `src/config.py` (model name, chunk size, top-k).
+
+4. Run the project!
+
+```bash
+python src/web/app.py
+```
 
 ## Project layout (actual)
 
@@ -54,10 +49,6 @@ Medicine-Assistant/
 ├── README.md
 └── LICENSE
 ```
-
-## Notes
-- Tests import from the `src` package (run tests with `python -m pytest` or `PYTHONPATH=src pytest`).
-- Integration tests that call OpenRouter are skipped unless `OPENROUTER_API_KEY` is set.
 
 ## License
 MIT

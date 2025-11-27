@@ -1,5 +1,6 @@
 """RAG (Retrieval Augmented Generation) components for the Medicine Assistant."""
 
+import os
 from typing import Optional
 
 from langchain_chroma import Chroma
@@ -36,11 +37,19 @@ class RAGComponent:
     def vector_store(self) -> Chroma:
         """Get or create the vector store."""
         if self._vector_store is None:
-            self._vector_store = Chroma(
-                collection_name=settings.COLLECTION_NAME,
-                embedding_function=self.embeddings,
-                persist_directory=self.persist_directory,
-            )
+            if not os.path.exists(self.persist_directory):
+                raise FileNotFoundError(
+                    f"Chroma persist directory not found: {self.persist_directory}. "
+                    "Please run the ingestion script first."
+                )
+            try:
+                self._vector_store = Chroma(
+                    collection_name=settings.COLLECTION_NAME,
+                    embedding_function=self.embeddings,
+                    persist_directory=self.persist_directory,
+                )
+            except Exception as e:
+                raise RuntimeError(f"Failed to load Chroma vector store: {e}") from e
         return self._vector_store
 
     def get_retriever(self) -> VectorStoreRetriever:
