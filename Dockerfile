@@ -35,6 +35,7 @@ RUN set -ex \
         zlib1g-dev \
         pkg-config \
         fonts-dejavu-core \
+        ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files

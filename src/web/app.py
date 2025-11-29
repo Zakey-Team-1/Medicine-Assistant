@@ -2,6 +2,7 @@ import io
 import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 from flask import Flask, flash, redirect, render_template, request, url_for, send_file, jsonify
 from markdown import markdown as md_to_html
@@ -11,6 +12,7 @@ except Exception:
     HTML = None
     CSS = None
 from utils.translate import translate_en_to_ar
+from utils.stt import stt as stt_tool
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
@@ -335,6 +337,27 @@ def consult_pdf(report_type: str):
         return (jsonify({'error': str(e)}), 500)
 
 
+    @app.route('/consult/stt', methods=('POST',))
+    def consult_stt():
+        """Accept an audio file upload (form field 'audio') and return the STT tool output as JSON.
+
+        Currently the `utils.stt.stt()` function is a placeholder and does not accept audio bytes.
+        This endpoint accepts the uploaded file for future use and returns the dict from the STT tool.
+        """
+        # Basic validation
+        if 'audio' not in request.files:
+            return jsonify({'error': "Missing 'audio' file in request"}), 400
+
+        audio_file = request.files['audio']
+        # We don't currently process the audio bytes; pass through to the STT placeholder
+        try:
+            # If in future stt_tool accepts bytes, we can pass audio_file.read()
+            stt_result = stt_tool()
+            return jsonify(stt_result)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+
 # Alternative: Async version if using async Flask (e.g., with Quart)
 @app.route('/consult', methods=('GET', 'POST'))
 async def consult_async():
@@ -412,6 +435,69 @@ async def consult_async():
     pat_html_ar = md_to_html(pat_md_ar, extensions=['extra', 'nl2br']) if pat_md_ar else ''
 
     return render_template('consult.html', patient=patient, result=result, physician_html=phys_html, patient_html=pat_html, patient_html_ar=pat_html_ar)
+
+
+@app.route('/consult/stt', methods=['POST'])
+def consult_stt():
+    """
+    API endpoint for speech-to-text processing in consult form.
+    Accepts audio file upload and returns extracted patient data as JSON.
+    
+    Expected form data:
+        - audio: Audio file (webm, mp3, wav, etc.)
+    
+    Returns:
+        JSON with keys matching consult form fields:
+        - HbA1c, Blood Glucose, eGFR, Lipid Panel, Blood Pressure, 
+        - Symptoms & Notes, Treatments Adjustments
+    """
+    # Check if audio file is in the request
+    if 'audio' not in request.files:
+        return jsonify({"error": "No audio file provided"}), 400
+    
+    audio_file = request.files['audio']
+    
+    if audio_file.filename == '':
+        return jsonify({"error": "No audio file selected"}), 400
+    
+    # Get API key from environment
+    api_key = os.getenv("OPENROUTER_API_KEY", "")
+    if not api_key:
+        return jsonify({"error": "OpenRouter API key not configured"}), 500
+    
+    # Save uploaded audio to a temporary file
+    try:
+        # Determine file extension from original filename or default to webm
+        original_ext = os.path.splitext(audio_file.filename)[1] or '.webm'
+        
+        with tempfile.NamedTemporaryFile(suffix=original_ext, delete=False) as tmp_audio:
+            audio_file.save(tmp_audio.name)
+            tmp_audio_path = tmp_audio.name
+        
+        try:
+            # Process audio with STT - returns dict with form field keys
+            try:
+                result = stt_tool(
+                    audio_path=tmp_audio_path,
+                    api_key=api_key
+                )
+            except Exception as inner_e:
+                import traceback
+                traceback.print_exc()
+                return jsonify({"error": f"STT processing failed: {str(inner_e)}"}), 500
+
+            # Return the result directly (keys match what frontend expects)
+            return jsonify(result)
+            
+        finally:
+            # Clean up temporary audio file
+            if os.path.exists(tmp_audio_path):
+                os.remove(tmp_audio_path)
+                
+    except Exception as e:
+        print(f"STT API error: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/about')
 def about():

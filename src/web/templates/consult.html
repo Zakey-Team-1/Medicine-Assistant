@@ -21,6 +21,12 @@
         <form method="POST" action="/consult">
             <input type="hidden" name="patient_id" value="{{ patient.patient_id if patient else '' }}">
 
+            <!-- Audio recorder: records audio and sends to /consult/stt to populate the form -->
+            <div class="mb-4 flex items-center gap-3">
+                <button id="record-btn" type="button" class="inline-flex items-center px-4 py-2 rounded-md bg-secondary text-white text-sm font-medium hover:bg-secondary-dark focus:outline-none focus:ring-2 focus:ring-primary">Start Recording</button>
+                <span id="record-status" class="text-sm text-gray-300">Not recording</span>
+            </div>
+
             {% if patient %}
             <div class="bg-gray-700 border-l-4 border-primary p-4 mb-6 text-gray-100" role="alert">
                 <p class="font-semibold text-lg">{{ patient.name }}</p>
@@ -78,7 +84,108 @@
         </div>
     </div>
 
-</n>    <!-- Assistant Report (wide, page-level) -->
+    <!-- Assistant Report (wide, page-level) -->
+    <script>
+    (function(){
+        // Map keys returned from utils.stt to form input IDs
+        const keyToId = {
+            'HbA1c': 'latest_hba1c',
+            'Blood Glucose': 'blood_glucose',
+            'eGFR': 'egfr',
+            'Lipid Panel': 'lipid_panel',
+            'Blood Pressure': 'blood_pressure',
+            'Symptoms & Notes': 'symptoms_notes',
+            'Treatments Adjustments': 'treatment_adjustments'
+        };
+
+        const recordBtn = document.getElementById('record-btn');
+        const statusSpan = document.getElementById('record-status');
+        let mediaRecorder = null;
+        let chunks = [];
+
+        function setStatus(s){ if(statusSpan) statusSpan.textContent = s; }
+
+        async function startRecording(){
+            if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+                alert('Microphone access is not supported in this browser.');
+                return;
+            }
+            try{
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                chunks = [];
+                mediaRecorder.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+                mediaRecorder.onstop = onRecordingStop;
+                mediaRecorder.start();
+                setStatus('Recording...');
+                recordBtn.textContent = 'Stop Recording';
+            }catch(e){
+                console.error('getUserMedia error', e);
+                alert('Could not start recording: ' + e.message);
+            }
+        }
+
+        function stopRecording(){
+            if(mediaRecorder && mediaRecorder.state === 'recording'){
+                mediaRecorder.stop();
+                setStatus('Processing...');
+                recordBtn.textContent = 'Start Recording';
+            }
+        }
+
+        async function onRecordingStop(){
+            const blob = new Blob(chunks, { type: 'audio/webm' });
+            // send to server
+            const form = new FormData();
+            form.append('audio', blob, 'recording.webm');
+
+            try{
+                const resp = await fetch('/consult/stt', { method: 'POST', body: form });
+                if(!resp.ok){
+                    const err = await resp.json().catch(()=>({}));
+                    setStatus('Error from server');
+                    alert('STT request failed: ' + (err.error || resp.statusText));
+                    return;
+                }
+                const data = await resp.json();
+                populateFields(data);
+                setStatus('Ready');
+            }catch(e){
+                console.error('STT upload error', e);
+                setStatus('Upload error');
+                alert('Error sending audio: ' + e.message);
+            }
+        }
+
+        function populateFields(data){
+            if(!data) return;
+            for(const [k,v] of Object.entries(data)){
+                const id = keyToId[k];
+                if(!id) continue;
+                const el = document.getElementById(id);
+                if(!el) continue;
+                // If element is an input/textarea, set its value
+                if('value' in el){
+                    el.value = v || '';
+                } else {
+                    el.textContent = v || '';
+                }
+            }
+        }
+
+        if(recordBtn){
+            recordBtn.addEventListener('click', function(){
+                if(mediaRecorder && mediaRecorder.state === 'recording'){
+                    stopRecording();
+                } else {
+                    startRecording();
+                }
+            });
+        }
+    })();
+    </script>
+
+    <!-- Assistant Report (wide, page-level) -->
     <div class="max-w-5xl mx-auto">
         <h2 class="text-2xl font-semibold text-gray-100 mb-4">Assistant Reports</h2>
 
